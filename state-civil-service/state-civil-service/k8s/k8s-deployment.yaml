@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: state-civil-service
+spec:
+  replicas: 1 # Nombre d'instances
+  selector:
+    matchLabels:
+      app: state-civil-service
+  template:
+    metadata:
+      labels:
+        app: state-civil-service
+    spec:
+      containers:
+      - name: state-civil-service
+        image: state-civil-service:latest
+        ports:
+        - containerPort: 8080
+        
+        # --- RÉSILIENCE : Resource Quotas (Limites) ---
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+
+        # --- RÉSILIENCE : Healthcheck (Vérification de santé) ---
+        livenessProbe: # Vérifie si l'appli est plantée
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe: # Vérifie si l'appli est prête à recevoir du trafic
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 20
